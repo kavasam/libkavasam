@@ -2,6 +2,11 @@
 name = "libkavasam"
 version = "0.1.0"
 edition = "2021"
+description = "libkavasam - privacy-respecting spam controm system"
+homepage = "https://kavasam.org"
+repository = "https://github.com/kavasam/libkavasam"
+license = "AGPLv3 or later version"
+authors = ["realaravinth <realaravinth@batsense.net>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,5 +14,5 @@ edition = "2021"
 lazy_static = "1.4.0"
 multihash = { version = "0.15.0", features=["serde-codec"]}
 ring = "0.16.20"
-serde = { version = "*", features=["derive"]}
-serde_json = "*"
+serde = { version = "1", features=["derive"]}
+serde_json = "1"
