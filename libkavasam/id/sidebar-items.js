@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Identity","User-owned ID in the Kavasam system"],["PublicKey","Public key of a user in the kavasam system"]]});
