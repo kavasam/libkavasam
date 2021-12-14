@@ -1,6 +1,6 @@
 CLEAN_UP = target
 
-default: frontend ## Build app in debug mode
+default: ## Build app in debug mode
 	cargo build
 
 clean: ## Delete build artifacts
