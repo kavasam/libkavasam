@@ -4,7 +4,7 @@
     <strong></strong>
   </p>
 
-[![Documentation](https://img.shields.io/badge/docs-master-blue?style=flat-square)](https://kavasam.github.io/kavasam/libkavasam/)
+[![Documentation](https://img.shields.io/badge/docs-master-blue?style=flat-square)](https://kavasam.github.io/libkavasam/libkavasam/)
 [![Build](https://github.com/kavasam/libkavasam/actions/workflows/linux.yml/badge.svg)](https://github.com/kavasam/libkavasam/actions/workflows/linux.yml)
 [![dependency status](https://deps.rs/repo/github/kavasam/libkavasam/status.svg?style=flat-square)](https://deps.rs/repo/github/kavasam/libkavasam)
 [![codecov](https://codecov.io/gh/kavasam/libkavasam/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/kavasam/libkavasam)
