@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use crate::errors::*;
+use base64::{decode, encode};
 use lazy_static::lazy_static;
 use ring::{
     rand::SystemRandom,
@@ -21,8 +23,6 @@ use ring::{
         self, EcdsaKeyPair, KeyPair, Signature, ECDSA_P384_SHA384_FIXED_SIGNING,
     },
 };
-use base64::{encode, decode};
-use crate::errors::*;
 
 lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
@@ -47,12 +47,12 @@ impl PublicKey {
     }
 
     /// String representation
-    pub fn to_string(&self) -> String {
+    pub fn asci_armor(&self) -> String {
         encode(&self.bytes)
     }
 
     /// String representation
-    pub fn from_str(key: &str) -> ServiceResult<Self> {
+    pub fn from_ascii_armor(key: &str) -> ServiceResult<Self> {
         let bytes = decode(key)?;
         Ok(Self::from_bytes(&bytes))
     }
@@ -124,14 +124,17 @@ mod tests {
     #[test]
     fn identity_works() {
         let (pkcs8_bytes, id) = Identity::new();
-        assert_eq!(id.pub_key(), Identity::from_pkcs8(&pkcs8_bytes).pub_key());
-        assert_eq!(
-            id.pub_key(),
-            PublicKey::from_bytes(&id.pub_key().to_bytes())
-        );
+        let public_key = id.pub_key();
+        assert_eq!(public_key, Identity::from_pkcs8(&pkcs8_bytes).pub_key());
+        assert_eq!(public_key, PublicKey::from_bytes(&id.pub_key().to_bytes()));
 
         const MSG: &[u8] = b"foo";
         let sig = id.sign(MSG);
         assert!(id.verify(MSG, sig.as_ref()));
+
+        assert_eq!(
+            PublicKey::from_ascii_armor(&public_key.asci_armor()).unwrap(),
+            public_key
+        );
     }
 }

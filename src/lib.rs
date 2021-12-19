@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use base64::{decode, encode};
 use multihash::derive::Multihash;
 use multihash::typenum::{U32, U64};
-use base64::{encode, decode};
 use multihash::{
     Blake2b256, Blake2bDigest, MultihashDigest, MultihashGeneric, Sha2Digest, Sha2_256,
     Sha3Digest, Sha3_256,
@@ -24,11 +24,11 @@ use multihash::{
 
 use serde::{Deserialize, Serialize};
 
-pub mod id;
 pub mod errors;
+pub mod id;
 
-use id::Identity;
 use errors::ServiceResult;
+use id::Identity;
 
 #[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
 /// Represents a signed hash message, the hash being the digest of
@@ -53,16 +53,17 @@ impl SignedHash {
     /// Get ASCII armored representation of [Self]
     pub fn ascii_armor(&self) -> SignedHashAsciiArmored {
         SignedHashAsciiArmored {
-        sign: encode(&self.sign),
+            sign: encode(&self.sign),
             hash: encode(&self.hash.to_bytes()),
         }
     }
 
     /// String representation
-    pub fn from_ascii_armor(ascii_armor: &SignedHashAsciiArmored) -> ServiceResult<Self> {
+    pub fn from_ascii_armor(
+        ascii_armor: &SignedHashAsciiArmored,
+    ) -> ServiceResult<Self> {
         ascii_armor.to_signed_hash()
     }
-
 }
 
 #[derive(Deserialize, PartialEq, Serialize, Debug, Clone)]
@@ -71,7 +72,7 @@ pub struct SignedHashAsciiArmored {
     /// Hash in ASCII
     pub hash: String,
     /// Signature in ASCII
-    pub sign: String
+    pub sign: String,
 }
 
 impl SignedHashAsciiArmored {
@@ -82,11 +83,10 @@ impl SignedHashAsciiArmored {
 
     /// Get [SignedHash]
     pub fn to_signed_hash(&self) -> ServiceResult<SignedHash> {
-        Ok( SignedHash{
+        Ok(SignedHash {
             hash: MultihashGeneric::from_bytes(&decode(&self.hash)?)?,
             sign: decode(&self.sign)?,
         })
-
     }
 }
 
@@ -178,7 +178,6 @@ mod tests {
             !signed_hash.verify(&public_key),
             "signature verification failed, invalid signature"
         );
-
     }
 
     #[test]
@@ -191,9 +190,11 @@ mod tests {
         let ascii_armored = signed_hash.ascii_armor();
         assert_eq!(ascii_armored, SignedHashAsciiArmored::new(&signed_hash));
 
-
         let from_ascii_armor = ascii_armored.to_signed_hash().unwrap();
-        assert_eq!(SignedHash::from_ascii_armor(&ascii_armored).unwrap(), from_ascii_armor);
+        assert_eq!(
+            SignedHash::from_ascii_armor(&ascii_armored).unwrap(),
+            from_ascii_armor
+        );
 
         assert_eq!(from_ascii_armor, signed_hash);
         assert!(from_ascii_armor.verify(&public_key))
@@ -217,6 +218,9 @@ mod tests {
     fn custom_table_matches_multihash_impl() {
         assert_eq!(Code::Sha3_256.digest(DATA), MCode::Sha3_256.digest(DATA));
         assert_eq!(Code::Sha2_256.digest(DATA), MCode::Sha2_256.digest(DATA));
-        assert_eq!(Code::Blake2b256.digest(DATA), MCode::Blake2b256.digest(DATA));
+        assert_eq!(
+            Code::Blake2b256.digest(DATA),
+            MCode::Blake2b256.digest(DATA)
+        );
     }
 }

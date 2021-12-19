@@ -17,8 +17,8 @@
 
 use std::convert::From;
 
-use derive_more::{Display, Error};
 use base64::DecodeError as Base64Error;
+use derive_more::{Display, Error};
 use multihash::Error as MultihashError;
 
 #[derive(Debug, Display, Error)]
@@ -29,7 +29,6 @@ pub enum ServiceError {
 
     #[display(fmt = "{}", _0)]
     MultihashError(MultihashError),
-
 }
 
 impl From<Base64Error> for ServiceError {
