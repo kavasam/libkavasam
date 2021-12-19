@@ -21,6 +21,8 @@ use ring::{
         self, EcdsaKeyPair, KeyPair, Signature, ECDSA_P384_SHA384_FIXED_SIGNING,
     },
 };
+use base64::{encode, decode};
+use crate::errors::*;
 
 lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
@@ -42,6 +44,17 @@ impl PublicKey {
     /// Public key in raw bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         self.bytes.clone()
+    }
+
+    /// String representation
+    pub fn to_string(&self) -> String {
+        encode(&self.bytes)
+    }
+
+    /// String representation
+    pub fn from_str(key: &str) -> ServiceResult<Self> {
+        let bytes = decode(key)?;
+        Ok(Self::from_bytes(&bytes))
     }
 
     /// load public key from bytes
@@ -107,6 +120,7 @@ impl Identity {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn identity_works() {
         let (pkcs8_bytes, id) = Identity::new();
@@ -118,6 +132,6 @@ mod tests {
 
         const MSG: &[u8] = b"foo";
         let sig = id.sign(MSG);
-        assert!(id.verify(MSG, sig.as_ref()))
+        assert!(id.verify(MSG, sig.as_ref()));
     }
 }
