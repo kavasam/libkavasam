@@ -26,17 +26,21 @@ use serde::{Deserialize, Serialize};
 pub mod id;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+/// Represents a signed hash message, the hash being the digest of
+/// the identifier(phone number,email address, etc.)
 pub struct SignedHash {
     hash: MultihashGeneric<U64>,
     sign: Vec<u8>,
 }
 
 impl SignedHash {
+    /// Generate new signed message
     pub fn new(hash: MultihashGeneric<U64>, id: &id::Identity) -> Self {
         let sign = id.sign(&hash.to_bytes()).as_ref().to_owned();
         Self { hash, sign }
     }
 
+    /// Verify a signed message
     pub fn verify(&self, public_key: &id::PublicKey) -> bool {
         public_key.verify(&self.hash.to_bytes(), &self.sign)
     }
@@ -44,6 +48,7 @@ impl SignedHash {
 
 #[derive(Clone, Copy, Debug, Eq, Multihash, PartialEq, Deserialize, Serialize)]
 #[mh(alloc_size = U64)]
+/// Supported hasing algorithms
 pub enum Code {
     /// SHA2-256 (32-byte hash size)
     #[mh(code = 0x12, hasher = Sha2_256, digest = Sha2Digest<U32>)]
@@ -57,20 +62,28 @@ pub enum Code {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+/// Identier type supported by Kavasam
 pub enum IDType {
+    /// Phone number
     PhoneNumber,
+    /// Email ID
     Email,
 }
 
 #[derive(Debug, Clone)]
+/// A message sent to report an identifer
 pub struct ReportMessage {
-    pub message_type: IDType,
+    /// Identifier type
+    pub id_type: IDType,
+    /// Hashes of the identifer signed by the reporting agent
     pub hashes: [SignedHash; 3],
+    /// public key of reporting agent
     pub public_key: id::PublicKey,
 }
 
 impl ReportMessage {
-    pub fn new(data: &[u8], message_type: IDType, id: &id::Identity) -> Self {
+    /// Generate a new message to report an identifier
+    pub fn new(data: &[u8], id_type: IDType, id: &id::Identity) -> Self {
         let hashes = [
             SignedHash::new(Code::Sha2_256.digest(data), id),
             SignedHash::new(Code::Sha3_256.digest(data), id),
@@ -80,12 +93,13 @@ impl ReportMessage {
         let public_key = id.pub_key();
 
         Self {
-            message_type,
+            id_type,
             hashes,
             public_key,
         }
     }
 
+    /// Verify a reported message
     pub fn verify(&self) -> bool {
         for h in self.hashes.iter() {
             if !h.verify(&self.public_key) {
