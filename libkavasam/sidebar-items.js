@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Code",""],["IDType",""]],"mod":[["id",""]],"struct":[["ReportMessage",""]],"type":[["Multihash","A Multihash with the same allocated size as the Multihashes produces by this derive."]]});
+initSidebarItems({"enum":[["Code",""],["IDType",""]],"mod":[["id",""]],"struct":[["ReportMessage",""],["SignedHash",""]],"type":[["Multihash","A Multihash with the same allocated size as the Multihashes produces by this derive."]]});
