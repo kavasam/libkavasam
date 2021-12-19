@@ -220,6 +220,10 @@
 <span id="220">220</span>
 <span id="221">221</span>
 <span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * Copyright (C) 2021  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
  *
@@ -236,9 +240,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
  */</span>
+<span class="kw">use</span> <span class="ident">base64</span>::{<span class="ident">decode</span>, <span class="ident">encode</span>};
 <span class="kw">use</span> <span class="ident">multihash::derive::Multihash</span>;
 <span class="kw">use</span> <span class="ident">multihash::typenum</span>::{<span class="ident">U32</span>, <span class="ident">U64</span>};
-<span class="kw">use</span> <span class="ident">base64</span>::{<span class="ident">encode</span>, <span class="ident">decode</span>};
 <span class="kw">use</span> <span class="ident">multihash</span>::{
     <span class="ident">Blake2b256</span>, <span class="ident">Blake2bDigest</span>, <span class="ident">MultihashDigest</span>, <span class="ident">MultihashGeneric</span>, <span class="ident">Sha2Digest</span>, <span class="ident">Sha2_256</span>,
     <span class="ident">Sha3Digest</span>, <span class="ident">Sha3_256</span>,
@@ -246,11 +250,11 @@
 
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">id</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">id</span>;
 
-<span class="kw">use</span> <span class="ident">id::Identity</span>;
 <span class="kw">use</span> <span class="ident">errors::ServiceResult</span>;
+<span class="kw">use</span> <span class="ident">id::Identity</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="doccomment">/// Represents a signed hash message, the hash being the digest of</span>
@@ -275,16 +279,17 @@
     <span class="doccomment">/// Get ASCII armored representation of [Self]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ascii_armor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SignedHashAsciiArmored</span> {
         <span class="ident">SignedHashAsciiArmored</span> {
-        <span class="ident">sign</span>: <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sign</span>),
+            <span class="ident">sign</span>: <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sign</span>),
             <span class="ident">hash</span>: <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">hash</span>.<span class="ident">to_bytes</span>()),
         }
     }
 
     <span class="doccomment">/// String representation</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_ascii_armor</span>(<span class="ident">ascii_armor</span>: <span class="kw-2">&amp;</span><span class="ident">SignedHashAsciiArmored</span>) -&gt; <span class="ident">ServiceResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_ascii_armor</span>(
+        <span class="ident">ascii_armor</span>: <span class="kw-2">&amp;</span><span class="ident">SignedHashAsciiArmored</span>,
+    ) -&gt; <span class="ident">ServiceResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident">ascii_armor</span>.<span class="ident">to_signed_hash</span>()
     }
-
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -293,7 +298,7 @@
     <span class="doccomment">/// Hash in ASCII</span>
     <span class="kw">pub</span> <span class="ident">hash</span>: <span class="ident">String</span>,
     <span class="doccomment">/// Signature in ASCII</span>
-    <span class="kw">pub</span> <span class="ident">sign</span>: <span class="ident">String</span>
+    <span class="kw">pub</span> <span class="ident">sign</span>: <span class="ident">String</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">SignedHashAsciiArmored</span> {
@@ -304,11 +309,10 @@
 
     <span class="doccomment">/// Get [SignedHash]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_signed_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">ServiceResult</span><span class="op">&lt;</span><span class="ident">SignedHash</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>( <span class="ident">SignedHash</span>{
+        <span class="prelude-val">Ok</span>(<span class="ident">SignedHash</span> {
             <span class="ident">hash</span>: <span class="ident">MultihashGeneric::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">decode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">hash</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
             <span class="ident">sign</span>: <span class="ident">decode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sign</span>)<span class="question-mark">?</span>,
         })
-
     }
 }
 
@@ -400,7 +404,6 @@
             <span class="op">!</span><span class="ident">signed_hash</span>.<span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="ident">public_key</span>),
             <span class="string">&quot;signature verification failed, invalid signature&quot;</span>
         );
-
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -413,9 +416,11 @@
         <span class="kw">let</span> <span class="ident">ascii_armored</span> <span class="op">=</span> <span class="ident">signed_hash</span>.<span class="ident">ascii_armor</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">ascii_armored</span>, <span class="ident">SignedHashAsciiArmored::new</span>(<span class="kw-2">&amp;</span><span class="ident">signed_hash</span>));
 
-
         <span class="kw">let</span> <span class="ident">from_ascii_armor</span> <span class="op">=</span> <span class="ident">ascii_armored</span>.<span class="ident">to_signed_hash</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">SignedHash::from_ascii_armor</span>(<span class="kw-2">&amp;</span><span class="ident">ascii_armored</span>).<span class="ident">unwrap</span>(), <span class="ident">from_ascii_armor</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">SignedHash::from_ascii_armor</span>(<span class="kw-2">&amp;</span><span class="ident">ascii_armored</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">from_ascii_armor</span>
+        );
 
         <span class="macro">assert_eq!</span>(<span class="ident">from_ascii_armor</span>, <span class="ident">signed_hash</span>);
         <span class="macro">assert!</span>(<span class="ident">from_ascii_armor</span>.<span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="ident">public_key</span>))
@@ -439,7 +444,10 @@
     <span class="kw">fn</span> <span class="ident">custom_table_matches_multihash_impl</span>() {
         <span class="macro">assert_eq!</span>(<span class="ident">Code::Sha3_256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>), <span class="ident">MCode::Sha3_256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>));
         <span class="macro">assert_eq!</span>(<span class="ident">Code::Sha2_256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>), <span class="ident">MCode::Sha2_256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">Code::Blake2b256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>), <span class="ident">MCode::Blake2b256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>));
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">Code::Blake2b256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>),
+            <span class="ident">MCode::Blake2b256</span>.<span class="ident">digest</span>(<span class="ident">DATA</span>)
+        );
     }
 }
 </code></pre></div>
