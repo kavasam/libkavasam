@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["libkavasam"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.57.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"libkavasam/errors/enum.ServiceError.html\" title=\"enum libkavasam::errors::ServiceError\">ServiceError</a>","synthetic":false,"types":["libkavasam::errors::ServiceError"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
