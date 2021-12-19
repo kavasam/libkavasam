@@ -17,8 +17,8 @@
 use multihash::derive::Multihash;
 use multihash::typenum::{U32, U64};
 use multihash::{
-    Blake2b256, Blake2bDigest, MultihashGeneric, Sha2Digest, Sha2_256, Sha3Digest,
-    Sha3_256,
+    Blake2b256, Blake2bDigest, MultihashDigest, MultihashGeneric, Sha2Digest, Sha2_256,
+    Sha3Digest, Sha3_256,
 };
 
 use serde::{Deserialize, Serialize};
@@ -26,17 +26,20 @@ use serde::{Deserialize, Serialize};
 pub mod id;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub enum IDType {
-    PhoneNumber,
-    Email,
+pub struct SignedHash {
+    hash: MultihashGeneric<U64>,
+    sign: Vec<u8>,
 }
 
-#[derive(Debug, Clone)]
-pub struct ReportMessage {
-    pub message_type: IDType,
-    pub hashes: [MultihashGeneric<U64>; 3],
-    pub public_key: id::PublicKey,
-    pub signature: id::PublicKey,
+impl SignedHash {
+    pub fn new(hash: MultihashGeneric<U64>, id: &id::Identity) -> Self {
+        let sign = id.sign(&hash.to_bytes()).as_ref().to_owned();
+        Self { hash, sign }
+    }
+
+    pub fn verify(&self, public_key: &id::PublicKey) -> bool {
+        public_key.verify(&self.hash.to_bytes(), &self.sign)
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Multihash, PartialEq, Deserialize, Serialize)]
@@ -53,26 +56,85 @@ pub enum Code {
     Blake2b256,
 }
 
-//impl Message {
-//    pub fn new(id: &[u8], message_type: IDType) -> Self {
-//        let hashes = [
-//            Code::Sha2_256.digest(id),
-//            Code::Sha3_256.digest(id),
-//            Code::Blake2b256.digest(id),
-//        ];
-//
-//        Self {
-//            message_type,
-//            hashes,
-//        }
-//    }
-//}
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum IDType {
+    PhoneNumber,
+    Email,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReportMessage {
+    pub message_type: IDType,
+    pub hashes: [SignedHash; 3],
+    pub public_key: id::PublicKey,
+}
+
+impl ReportMessage {
+    pub fn new(data: &[u8], message_type: IDType, id: &id::Identity) -> Self {
+        let hashes = [
+            SignedHash::new(Code::Sha2_256.digest(data), id),
+            SignedHash::new(Code::Sha3_256.digest(data), id),
+            SignedHash::new(Code::Blake2b256.digest(data), id),
+        ];
+
+        let public_key = id.pub_key();
+
+        Self {
+            message_type,
+            hashes,
+            public_key,
+        }
+    }
+
+    pub fn verify(&self) -> bool {
+        for h in self.hashes.iter() {
+            if !h.verify(&self.public_key) {
+                return false;
+            }
+        }
+        true
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use multihash::Code as MCode;
-    use multihash::MultihashDigest;
+
+    #[test]
+    fn signed_hash_work() {
+        let (_pkcs8_bytes, id) = id::Identity::new();
+        let public_key = id.pub_key();
+        const DATA: &[u8] = b"fooabr";
+        let hash1 = Code::Sha3_256.digest(DATA);
+        let hash2 = Code::Sha3_256.digest(b"barfoo");
+        let mut signed_hash = SignedHash::new(hash1, &id);
+        assert!(
+            signed_hash.verify(&public_key),
+            "signature successfully verified"
+        );
+        signed_hash.hash = hash2;
+        assert!(
+            !signed_hash.verify(&public_key),
+            "signature verification failed, invalid signature"
+        );
+    }
+
+    #[test]
+    fn report_messages_work() {
+        let (_pkcs8_bytes, id) = id::Identity::new();
+        const DATA: &[u8] = b"fooabr";
+        let mut msg = ReportMessage::new(DATA, IDType::PhoneNumber, &id);
+        assert!(msg.verify());
+
+        let hash1 = Code::Sha3_256.digest(DATA);
+        let hash2 = Code::Sha3_256.digest(b"barfoo");
+        let mut signed_hash = SignedHash::new(hash1, &id);
+        signed_hash.hash = hash2;
+        msg.hashes[2] = signed_hash;
+        assert!(!msg.verify());
+    }
+
     #[test]
     fn custom_table_matches_multihash_impl() {
         let x = b"1234123455";
