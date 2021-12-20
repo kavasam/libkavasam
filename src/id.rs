@@ -80,6 +80,12 @@ pub struct Identity {
     pkcs8_bytes: Vec<u8>,
 }
 
+impl Default for Identity {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Identity {
     /// Generate new identity
     pub fn new() -> Self {
