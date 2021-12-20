@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn signed_hash_work() {
-        let (_pkcs8_bytes, id) = Identity::new();
+        let id = Identity::new();
         let public_key = id.pub_key();
         let hash1 = Code::Sha3_256.digest(DATA);
         let hash2 = Code::Sha3_256.digest(b"barfoo");
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn ascii_armor_works() {
-        let (_pkcs8_bytes, id) = Identity::new();
+        let id = Identity::new();
         let public_key = id.pub_key();
         let hash1 = Code::Sha3_256.digest(DATA);
         let signed_hash = SignedHash::new(hash1, &id);
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn report_messages_work() {
-        let (_pkcs8_bytes, id) = Identity::new();
+        let id = Identity::new();
         let mut msg = ReportMessage::new(DATA, IDType::PhoneNumber, &id);
         assert!(msg.verify());
 

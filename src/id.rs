@@ -28,12 +28,6 @@ lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
 }
 
-#[derive(Debug)]
-/// User-owned ID in the Kavasam system
-pub struct Identity {
-    key_pair: EcdsaKeyPair,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 /// Public key of a user in the kavasam system
 pub struct PublicKey {
@@ -79,16 +73,20 @@ impl PublicKey {
     }
 }
 
+#[derive(Debug)]
+/// User-owned ID in the Kavasam system
+pub struct Identity {
+    key_pair: EcdsaKeyPair,
+    pkcs8_bytes: Vec<u8>,
+}
+
 impl Identity {
     /// Generate new identity
-    pub fn new() -> (Vec<u8>, Self) {
+    pub fn new() -> Self {
         let pkcs8_bytes =
             EcdsaKeyPair::generate_pkcs8(&ECDSA_P384_SHA384_FIXED_SIGNING, &*RNG)
                 .unwrap();
-        (
-            pkcs8_bytes.as_ref().to_owned(),
-            Self::from_pkcs8(pkcs8_bytes.as_ref()),
-        )
+        Self::from_pkcs8(pkcs8_bytes.as_ref())
     }
 
     /// Load identity from persistence
@@ -96,7 +94,10 @@ impl Identity {
         let key_pair =
             EcdsaKeyPair::from_pkcs8(&ECDSA_P384_SHA384_FIXED_SIGNING, pkcs8_bytes)
                 .unwrap();
-        Self { key_pair }
+        Self {
+            key_pair,
+            pkcs8_bytes: pkcs8_bytes.to_owned(),
+        }
     }
 
     /// Sign message, proxies [Public::sign}(Public::sign)
@@ -123,9 +124,9 @@ mod tests {
 
     #[test]
     fn identity_works() {
-        let (pkcs8_bytes, id) = Identity::new();
+        let id = Identity::new();
         let public_key = id.pub_key();
-        assert_eq!(public_key, Identity::from_pkcs8(&pkcs8_bytes).pub_key());
+        assert_eq!(public_key, Identity::from_pkcs8(&id.pkcs8_bytes).pub_key());
         assert_eq!(public_key, PublicKey::from_bytes(&id.pub_key().to_bytes()));
 
         const MSG: &[u8] = b"foo";
