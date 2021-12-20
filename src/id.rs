@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::errors::*;
 use base64::{decode, encode};
 use lazy_static::lazy_static;
 use ring::{
@@ -23,6 +22,8 @@ use ring::{
         self, EcdsaKeyPair, KeyPair, Signature, ECDSA_P384_SHA384_FIXED_SIGNING,
     },
 };
+
+use crate::errors::*;
 
 lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
@@ -40,12 +41,12 @@ impl PublicKey {
         self.bytes.clone()
     }
 
-    /// String representation
+    /// String representation of [PublicKey]
     pub fn asci_armor(&self) -> String {
         encode(&self.bytes)
     }
 
-    /// String representation
+    /// Load [PublicKey] from ASCII armored form
     pub fn from_ascii_armor(key: &str) -> ServiceResult<Self> {
         let bytes = decode(key)?;
         Ok(Self::from_bytes(&bytes))
@@ -106,8 +107,20 @@ impl Identity {
         }
     }
 
+    /// Export [Identiy] pkcs8
     pub fn export_pkcs8(&self) -> &[u8] {
         self.pkcs8_bytes.as_ref()
+    }
+
+    /// Export [Identiy] in ASCII armored form
+    pub fn asci_armor(&self) -> String {
+        encode(self.export_pkcs8())
+    }
+
+    /// Load [Identiy] from ASCII armored form
+    pub fn from_ascii_armor(key: &str) -> ServiceResult<Self> {
+        let bytes = decode(key)?;
+        Ok(Self::from_pkcs8(&bytes))
     }
 
     /// Sign message, proxies [Public::sign}(Public::sign)
@@ -140,6 +153,13 @@ mod tests {
             public_key,
             Identity::from_pkcs8(id.export_pkcs8()).pub_key()
         );
+        assert_eq!(
+            public_key,
+            Identity::from_ascii_armor(&id.asci_armor())
+                .unwrap()
+                .pub_key()
+        );
+
         assert_eq!(public_key, PublicKey::from_bytes(&id.pub_key().to_bytes()));
 
         const MSG: &[u8] = b"foo";
