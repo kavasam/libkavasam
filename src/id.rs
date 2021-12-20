@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use std::clone::Clone;
+
 use base64::{decode, encode};
 use lazy_static::lazy_static;
 use ring::{
@@ -79,6 +81,12 @@ impl PublicKey {
 pub struct Identity {
     key_pair: EcdsaKeyPair,
     pkcs8_bytes: Vec<u8>,
+}
+
+impl Clone for Identity {
+    fn clone(&self) -> Self {
+        Self::from_pkcs8(self.export_pkcs8())
+    }
 }
 
 impl Default for Identity {
