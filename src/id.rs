@@ -106,6 +106,10 @@ impl Identity {
         }
     }
 
+    pub fn export_pkcs8(&self) -> &[u8] {
+        self.pkcs8_bytes.as_ref()
+    }
+
     /// Sign message, proxies [Public::sign}(Public::sign)
     pub fn sign(&self, msg: &[u8]) -> Signature {
         self.key_pair.sign(&*RNG, msg).unwrap()
@@ -132,7 +136,10 @@ mod tests {
     fn identity_works() {
         let id = Identity::new();
         let public_key = id.pub_key();
-        assert_eq!(public_key, Identity::from_pkcs8(&id.pkcs8_bytes).pub_key());
+        assert_eq!(
+            public_key,
+            Identity::from_pkcs8(id.export_pkcs8()).pub_key()
+        );
         assert_eq!(public_key, PublicKey::from_bytes(&id.pub_key().to_bytes()));
 
         const MSG: &[u8] = b"foo";
