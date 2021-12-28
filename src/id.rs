@@ -32,7 +32,7 @@ lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Public key of a user in the kavasam system
 pub struct PublicKey {
     bytes: Vec<u8>,
