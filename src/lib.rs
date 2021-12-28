@@ -105,7 +105,7 @@ pub enum Code {
     Blake2b256,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
 /// Identier type supported by Kavasam
 pub enum IDType {
     /// Phone number
@@ -221,6 +221,20 @@ mod tests {
         assert_eq!(
             Code::Blake2b256.digest(DATA),
             MCode::Blake2b256.digest(DATA)
+        );
+    }
+
+    #[test]
+    fn test_serde_id_type() {
+        let ser_email = serde_json::to_string(&IDType::Email).unwrap();
+        let ser_phone = serde_json::to_string(&IDType::PhoneNumber).unwrap();
+        assert_eq!(
+            serde_json::from_str::<IDType>(&ser_email).unwrap(),
+            IDType::Email
+        );
+        assert_eq!(
+            serde_json::from_str::<IDType>(&ser_phone).unwrap(),
+            IDType::PhoneNumber
         );
     }
 }
