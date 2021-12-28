@@ -340,7 +340,7 @@
     <span class="ident">Email</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="doccomment">/// A message sent to report an identifer</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ReportMessage</span> {
     <span class="doccomment">/// Identifier type</span>
