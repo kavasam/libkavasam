@@ -114,7 +114,7 @@ pub enum IDType {
     Email,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 /// A message sent to report an identifer
 pub struct ReportMessage {
     /// Identifier type

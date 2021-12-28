@@ -24,6 +24,7 @@ use ring::{
         self, EcdsaKeyPair, KeyPair, Signature, ECDSA_P384_SHA384_FIXED_SIGNING,
     },
 };
+use serde::{Deserialize, Serialize};
 
 use crate::errors::*;
 
@@ -31,7 +32,7 @@ lazy_static! {
     static ref RNG: SystemRandom = SystemRandom::new();
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 /// Public key of a user in the kavasam system
 pub struct PublicKey {
     bytes: Vec<u8>,
