@@ -29,6 +29,9 @@ pub enum ServiceError {
 
     #[display(fmt = "{}", _0)]
     MultihashError(MultihashError),
+
+    #[display(fmt = "{} is missing", _0)]
+    MissingField(#[error(not(source))] &'static str),
 }
 
 impl From<Base64Error> for ServiceError {
